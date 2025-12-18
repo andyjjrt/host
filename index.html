@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALN Hosting - Free Discord Bot Hosting</title>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Initial Loading Screen -->
+    <div id="initialLoadingScreen" class="initial-loading-screen">
+        <div class="loading-content">
+            <div class="loading-icon">
+                <i class="fas fa-cloud"></i>
+            </div>
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <p>Loading ALN Hosting...</p>
+        </div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-cloud"></i>
+                <span>ALN Hosting</span>
+            </div>
+        </div>
+        
+        <nav class="sidebar-nav" id="sidebarNav">
+            <!-- Navigation items will be dynamically inserted here -->
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-profile" id="userProfile">
+                <!-- User profile will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-container">
+        <div class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page">
+                <h2>Dashboard</h2>
+                <div class="dashboard-content">
+                    <!-- Dashboard content will be dynamically loaded -->
+                </div>
+            </div>
+
+            <!-- Files Page -->
+            <div id="filesPage" class="page" style="display: none;">
+                <h2>File Manager</h2>
+                <div class="files-content">
+                    <!-- Files content will be dynamically loaded -->
+                </div>
+            </div>
+
+            <!-- Console Page -->
+            <div id="consolePage" class="page" style="display: none;">
+                <h2>Console</h2>
+                <div class="console-content">
+                    <!-- Console content will be dynamically loaded -->
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settingsPage" class="page" style="display: none;">
+                <h2>Settings</h2>
+                <div class="settings-content">
+                    <!-- Settings content will be dynamically loaded -->
+                </div>
+            </div>
+
+            <!-- Admin Pages -->
+            <div id="userManagementPage" class="page" style="display: none;">
+                <h2>User Management</h2>
+                <div class="admin-content">
+                    <!-- Admin content will be dynamically loaded -->
+                </div>
+            </div>
+
+            <div id="permissionsPage" class="page" style="display: none;">
+                <h2>Permissions Management</h2>
+                <div class="admin-content">
+                    <!-- Permissions content will be dynamically loaded -->
+                </div>
+            </div>
+
+            <div id="referralManagementPage" class="page" style="display: none;">
+                <h2>Referral Management</h2>
+                <div class="admin-content">
+                    <!-- Referral management content will be dynamically loaded -->
+                </div>
+            </div>
+
+            <div id="webhooksPage" class="page" style="display: none;">
+                <h2>Webhook Management</h2>
+                <div class="admin-content">
+                    <!-- Webhooks content will be dynamically loaded -->
+                </div>
+            </div>
+
+            <div id="serverManagementPage" class="page" style="display: none;">
+                <h2>Server Management</h2>
+                <div class="admin-content">
+                    <!-- Server management content will be dynamically loaded -->
+                </div>
+            </div>
+
+            <!-- Referrals Page -->
+            <div id="referralsPage" class="page" style="display: none;">
+                <h2>Referrals</h2>
+                <div class="referrals-content">
+                    <!-- Referrals content will be dynamically loaded -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
