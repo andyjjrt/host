@@ -47,5 +47,13 @@
     "premium_type": 2,
     "email": "andyjjrt@gmail.com",
     "verified": true
+  },
+  "6723e9d5-a32a-4a22-bcd2-1b25ae352a59": {
+    "id": "demo-user-12345",
+    "username": "DemoUser",
+    "discriminator": "0001",
+    "avatar": null,
+    "discordId": "123456789012345678",
+    "email": "demo@example.com"
   }
 }

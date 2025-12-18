@@ -10,6 +10,8 @@ const fileRoutes = require('./fileRoutes');
 
 const botRoutes = require('./botRoutes');
 
+const internalRoutes = require('./internalRoutes');
+
 const app = express();
 const PORT = config.PORT;
 
@@ -29,6 +31,7 @@ app.use(express.static(path.join(__dirname)));
 app.use('/api/auth', authRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/bot', botRoutes);
+app.use('/api/internal', internalRoutes);
 
 // Admin Routes
 app.get('/api/admin/users', (req, res) => {
