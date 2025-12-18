@@ -1648,6 +1648,7 @@ function showDashboard() {
         <div class="page" id="creditsAdminPage"></div>
         <div class="page" id="referralManagementPage"></div>
         <div class="page" id="webhooksPage"></div>
+        <div class="page" id="serverManagementPage"></div>
       </main>
     </div>
   `;

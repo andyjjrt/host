@@ -55,5 +55,35 @@
     "avatar": null,
     "discordId": "123456789012345678",
     "email": "demo@example.com"
+  },
+  "55e2762c-e5a2-460b-9249-ee7724ee14ce": {
+    "id": "demo-user-12345",
+    "userId": "admin",
+    "username": "DemoAdmin",
+    "discriminator": "0001",
+    "avatar": null,
+    "discordId": "123456789012345678",
+    "email": "admin@example.com",
+    "role": "admin"
+  },
+  "610c1950-1d5b-449b-b663-38713bf9fd96": {
+    "id": "demo-user-12345",
+    "userId": "admin",
+    "username": "DemoAdmin",
+    "discriminator": "0001",
+    "avatar": null,
+    "discordId": "123456789012345678",
+    "email": "admin@example.com",
+    "role": "admin"
+  },
+  "bb3ff984-b4ef-40a8-a91f-562e76d3f1e7": {
+    "id": "demo-user-12345",
+    "userId": "admin",
+    "username": "DemoAdmin",
+    "discriminator": "0001",
+    "avatar": null,
+    "discordId": "123456789012345678",
+    "email": "admin@example.com",
+    "role": "admin"
   }
 }

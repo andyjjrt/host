@@ -116,11 +116,13 @@ router.get('/security-check', (req, res) => {
 router.post('/demo-login', (req, res) => {
     const mockUser = {
         id: 'demo-user-12345',
-        username: 'DemoUser',
+        userId: 'admin', // Make this an admin user
+        username: 'DemoAdmin',
         discriminator: '0001',
         avatar: null,
         discordId: '123456789012345678',
-        email: 'demo@example.com'
+        email: 'admin@example.com',
+        role: 'admin'
     };
     
     const sessionId = uuidv4();
