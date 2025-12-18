@@ -4,6 +4,7 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const sessionStore = require('./sessionStore');
+const { getProcessStats } = require('./processUtils');
 
 const USER_FILES_BASE_DIR = path.join(__dirname, 'user_files');
 
@@ -28,48 +29,6 @@ const getUserFilePath = (req, res, next) => {
     
     next();
 };
-
-// Helper function to get process resource usage
-async function getProcessStats(pid) {
-    try {
-        // Read /proc/[pid]/stat for CPU and memory info on Linux
-        if (process.platform === 'linux') {
-            const statPath = `/proc/${pid}/stat`;
-            if (!fs.existsSync(statPath)) {
-                return null;
-            }
-            
-            const stat = fs.readFileSync(statPath, 'utf-8');
-            const statParts = stat.split(' ');
-            
-            // Read memory from /proc/[pid]/status
-            const statusPath = `/proc/${pid}/status`;
-            const status = fs.readFileSync(statusPath, 'utf-8');
-            const vmRSSMatch = status.match(/VmRSS:\s+(\d+)/);
-            const memoryKB = vmRSSMatch ? parseInt(vmRSSMatch[1]) : 0;
-            
-            // Get CPU usage (simplified - would need multiple samples for accurate CPU%)
-            const utime = parseInt(statParts[13]);
-            const stime = parseInt(statParts[14]);
-            const totalTime = utime + stime;
-            
-            return {
-                memory: memoryKB * 1024, // Convert to bytes
-                cpu: 0, // Placeholder - accurate CPU% requires sampling over time
-                alive: true
-            };
-        } else {
-            // For non-Linux systems, return basic info
-            return {
-                memory: 0,
-                cpu: 0,
-                alive: true
-            };
-        }
-    } catch (error) {
-        return null;
-    }
-}
 
 // POST /api/bot/start - Start the bot
 router.post('/start', getUserFilePath, (req, res) => {

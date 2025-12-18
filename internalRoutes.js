@@ -3,42 +3,9 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const sessionStore = require('./sessionStore');
+const { getProcessStats } = require('./processUtils');
 
 const USER_FILES_BASE_DIR = path.join(__dirname, 'user_files');
-
-// Helper function to get process stats
-async function getProcessStats(pid) {
-    try {
-        if (process.platform === 'linux') {
-            const statPath = `/proc/${pid}/stat`;
-            if (!fs.existsSync(statPath)) {
-                return null;
-            }
-            
-            const stat = fs.readFileSync(statPath, 'utf-8');
-            const statParts = stat.split(' ');
-            
-            const statusPath = `/proc/${pid}/status`;
-            const status = fs.readFileSync(statusPath, 'utf-8');
-            const vmRSSMatch = status.match(/VmRSS:\s+(\d+)/);
-            const memoryKB = vmRSSMatch ? parseInt(vmRSSMatch[1]) : 0;
-            
-            return {
-                memory: memoryKB * 1024,
-                cpu: 0,
-                alive: true
-            };
-        } else {
-            return {
-                memory: 0,
-                cpu: 0,
-                alive: true
-            };
-        }
-    } catch (error) {
-        return null;
-    }
-}
 
 // Helper to collect all user services info
 async function getAllServicesInfo() {
@@ -119,14 +86,20 @@ function checkAdminAccess(req, res, next) {
     if (!sessionId || !sessionStore.has(sessionId)) {
         return res.status(401).json({ 
             success: false, 
-            error: 'Not authenticated',
-            code: '403-PERM-DENIED'
+            error: 'Not authenticated'
         });
     }
     
     const user = sessionStore.get(sessionId);
-    // In a real implementation, check if user has admin role
-    // For now, allow all authenticated users
+    
+    // Check if user has admin role
+    if (user.role !== 'admin') {
+        return res.status(403).json({
+            success: false,
+            error: 'Permission denied',
+            code: 'ADMIN_ACCESS_REQUIRED'
+        });
+    }
     
     next();
 }
