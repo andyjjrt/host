@@ -112,4 +112,31 @@ router.get('/security-check', (req, res) => {
     });
 });
 
+// Demo login endpoint for testing (remove in production)
+router.post('/demo-login', (req, res) => {
+    const mockUser = {
+        id: 'demo-user-12345',
+        userId: 'admin', // Make this an admin user
+        username: 'DemoAdmin',
+        discriminator: '0001',
+        avatar: null,
+        discordId: '123456789012345678',
+        email: 'admin@example.com',
+        role: 'admin'
+    };
+    
+    const sessionId = uuidv4();
+    sessionStore.set(sessionId, mockUser);
+    res.cookie('session', sessionId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Lax'
+    });
+    
+    res.json({
+        success: true,
+        user: mockUser
+    });
+});
+
 module.exports = router;

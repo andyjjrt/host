@@ -1444,6 +1444,10 @@ function showDashboard() {
       <i class="fas fa-user-friends"></i>
       <span>Referrals</span>
     </a>
+    <a href="#" class="nav-item" data-page="serverManagement">
+      <i class="fas fa-server"></i>
+      <span>Server Management</span>
+    </a>
   ` : `
     <div class="nav-section">GENERAL</div>
     <a href="#" class="nav-item active" data-page="dashboard">
@@ -1644,6 +1648,7 @@ function showDashboard() {
         <div class="page" id="creditsAdminPage"></div>
         <div class="page" id="referralManagementPage"></div>
         <div class="page" id="webhooksPage"></div>
+        <div class="page" id="serverManagementPage"></div>
       </main>
     </div>
   `;
@@ -15007,7 +15012,7 @@ async function loadServerManagementPage() {
   `;
   
   try {
-    const res = await fetch(`${API}/admin/server-management/check-access`, {
+    const res = await fetch(`${API}/internal/check-access`, {
       credentials: 'include'
     });
     const data = await res.json();
@@ -15142,7 +15147,7 @@ let serverMgmtServers = [];
 
 async function loadServerMgmtData() {
   try {
-    const res = await fetch(`${API}/admin/server-management/servers`, {
+    const res = await fetch(`${API}/internal/servers`, {
       credentials: 'include'
     });
     const data = await res.json();

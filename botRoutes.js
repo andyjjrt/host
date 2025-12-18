@@ -4,10 +4,12 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const sessionStore = require('./sessionStore');
+const { getProcessStats } = require('./processUtils');
 
 const USER_FILES_BASE_DIR = path.join(__dirname, 'user_files');
 
 // In-memory store for running bot processes
+// Each entry: { process, startTime, pid }
 const runningBots = new Map();
 
 // Middleware to get user and their file path from session
@@ -58,7 +60,11 @@ router.post('/start', getUserFilePath, (req, res) => {
 
     botProcess.unref(); // The parent process can exit independently of the child
 
-    runningBots.set(userId, botProcess);
+    runningBots.set(userId, {
+        process: botProcess,
+        startTime: Date.now(),
+        pid: botProcess.pid
+    });
 
     res.json({ success: true, message: 'Bot started successfully' });
 });
@@ -66,13 +72,13 @@ router.post('/start', getUserFilePath, (req, res) => {
 // POST /api/bot/stop - Stop the bot
 router.post('/stop', getUserFilePath, (req, res) => {
     const userId = req.user.id;
-    const botProcess = runningBots.get(userId);
+    const botData = runningBots.get(userId);
 
-    if (!botProcess) {
+    if (!botData) {
         return res.status(400).json({ success: false, error: 'Bot is not running' });
     }
 
-    botProcess.kill();
+    botData.process.kill();
     runningBots.delete(userId);
 
     res.json({ success: true, message: 'Bot stopped successfully' });
@@ -81,10 +87,10 @@ router.post('/stop', getUserFilePath, (req, res) => {
 // POST /api/bot/restart - Restart the bot
 router.post('/restart', getUserFilePath, (req, res) => {
     const userId = req.user.id;
-    const botProcess = runningBots.get(userId);
+    const botData = runningBots.get(userId);
 
-    if (botProcess) {
-        botProcess.kill();
+    if (botData) {
+        botData.process.kill();
         runningBots.delete(userId);
     }
     
@@ -109,23 +115,61 @@ router.post('/restart', getUserFilePath, (req, res) => {
     });
     
     newBotProcess.unref();
-    runningBots.set(userId, newBotProcess);
+    runningBots.set(userId, {
+        process: newBotProcess,
+        startTime: Date.now(),
+        pid: newBotProcess.pid
+    });
 
     res.json({ success: true, message: 'Bot restarted successfully' });
 });
 
 // GET /api/bot/status - Get bot status
-router.get('/status', getUserFilePath, (req, res) => {
+router.get('/status', getUserFilePath, async (req, res) => {
     const userId = req.user.id;
-    const isRunning = runningBots.has(userId);
+    const botData = runningBots.get(userId);
+    const isRunning = !!botData;
+
+    if (!isRunning) {
+        return res.json({
+            success: true,
+            status: {
+                running: false,
+                uptime: 0,
+                memory: 0,
+                cpu: 0
+            }
+        });
+    }
+
+    // Calculate uptime
+    const uptime = Math.floor((Date.now() - botData.startTime) / 1000);
+    
+    // Get resource usage
+    const stats = await getProcessStats(botData.pid);
+    
+    if (!stats) {
+        // Process might have died
+        runningBots.delete(userId);
+        return res.json({
+            success: true,
+            status: {
+                running: false,
+                uptime: 0,
+                memory: 0,
+                cpu: 0
+            }
+        });
+    }
 
     res.json({
         success: true,
         status: {
-            running: isRunning,
-            uptime: 0, // Placeholder
-            memory: 0, // Placeholder
-            cpu: 0     // Placeholder
+            running: true,
+            uptime: uptime,
+            memory: stats.memory,
+            cpu: stats.cpu,
+            pid: botData.pid
         }
     });
 });

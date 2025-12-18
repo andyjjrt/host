@@ -106,5 +106,95 @@ router.delete('/:path', getUserFilePath, (req, res) => {
     }
 });
 
+// GET /api/files/download/:path - Download a file
+router.get('/download/:path', getUserFilePath, (req, res) => {
+    const fileName = req.params.path;
+    const filePath = path.join(req.userFilesDir, fileName);
+
+    // Security check: ensure the path doesn't go outside the user's directory
+    if (path.dirname(filePath) !== req.userFilesDir) {
+        return res.status(400).json({ success: false, error: 'Invalid file path' });
+    }
+
+    try {
+        if (fs.existsSync(filePath)) {
+            const stat = fs.statSync(filePath);
+            if (stat.isDirectory()) {
+                return res.status(400).json({ success: false, error: 'Cannot download a directory' });
+            }
+            res.download(filePath, fileName);
+        } else {
+            res.status(404).json({ success: false, error: 'File not found' });
+        }
+    } catch (error) {
+        console.error('Error downloading file:', error);
+        res.status(500).json({ success: false, error: 'Failed to download file' });
+    }
+});
+
+// GET /api/files/view/:path - View/read file content
+router.get('/view/:path', getUserFilePath, (req, res) => {
+    const fileName = req.params.path;
+    const filePath = path.join(req.userFilesDir, fileName);
+
+    // Security check: ensure the path doesn't go outside the user's directory
+    if (path.dirname(filePath) !== req.userFilesDir) {
+        return res.status(400).json({ success: false, error: 'Invalid file path' });
+    }
+
+    try {
+        if (fs.existsSync(filePath)) {
+            const stat = fs.statSync(filePath);
+            if (stat.isDirectory()) {
+                return res.status(400).json({ success: false, error: 'Cannot view a directory' });
+            }
+            
+            const content = fs.readFileSync(filePath, 'utf-8');
+            res.json({ 
+                success: true, 
+                content: content,
+                name: fileName,
+                size: stat.size
+            });
+        } else {
+            res.status(404).json({ success: false, error: 'File not found' });
+        }
+    } catch (error) {
+        console.error('Error reading file:', error);
+        res.status(500).json({ success: false, error: 'Failed to read file' });
+    }
+});
+
+// PUT /api/files/edit/:path - Edit/update file content
+router.put('/edit/:path', getUserFilePath, (req, res) => {
+    const fileName = req.params.path;
+    const filePath = path.join(req.userFilesDir, fileName);
+    const { content } = req.body;
+
+    if (content === undefined) {
+        return res.status(400).json({ success: false, error: 'No content provided' });
+    }
+
+    // Security check: ensure the path doesn't go outside the user's directory
+    if (path.dirname(filePath) !== req.userFilesDir) {
+        return res.status(400).json({ success: false, error: 'Invalid file path' });
+    }
+
+    try {
+        if (fs.existsSync(filePath)) {
+            const stat = fs.statSync(filePath);
+            if (stat.isDirectory()) {
+                return res.status(400).json({ success: false, error: 'Cannot edit a directory' });
+            }
+        }
+        
+        fs.writeFileSync(filePath, content, 'utf-8');
+        res.json({ success: true, message: 'File updated successfully' });
+    } catch (error) {
+        console.error('Error updating file:', error);
+        res.status(500).json({ success: false, error: 'Failed to update file' });
+    }
+});
+
 
 module.exports = router;
