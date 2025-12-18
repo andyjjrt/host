@@ -1144,26 +1144,7 @@ function showOnboardingPage() {
 }
 
 async function handleDiscordLogin() {
-  try {
-    const res = await fetch(`${API}/auth/discord/login`, {
-      credentials: 'include'
-    });
-
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-
-    const data = await res.json();
-
-    if (data.authUrl) {
-      window.location.href = data.authUrl;
-    } else {
-      throw new Error('No authorization URL received from server');
-    }
-  } catch (err) {
-    console.error('Discord login error:', err);
-    showToast('❌ Login Failed', 'Failed to initiate Discord login. Please try again.', 'error', 5000);
-  }
+  window.location.href = `${API}/auth/discord/login`;
 }
 
 function togglePassword() {
@@ -1395,6 +1376,18 @@ async function sendAnnouncement() {
 }
 
 function showDashboard() {
+    // If dashboard is already rendered, just update dynamic parts
+    const existingSidebar = document.getElementById('sidebarModern');
+    if (existingSidebar) {
+        const avatarImg = existingSidebar.querySelector('.user-avatar img');
+        if (avatarImg) {
+            const newAvatarUrl = getDiscordAvatarUrl(currentUser);
+            if (avatarImg.src !== newAvatarUrl) {
+                avatarImg.src = newAvatarUrl;
+            }
+        }
+        return; // Avoid full re-render
+    }
   const isAdminConnect = currentUser && currentUser.isAdminConnect;
   // When admin is connected to user's hosting, treat them as hosting user for UI
   const isAdmin = currentUser && (currentUser.userId === 'admin' || currentUser.role === 'admin') && !isAdminConnect;
@@ -1505,17 +1498,12 @@ function showDashboard() {
     <!-- Mobile Overlay -->
     <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
     
-    <aside class="sidebar-modern" id="sidebarModern">
+    <aside class="sidebar" id="sidebarModern">
       <!-- Brand Header -->
-      <div class="brand-header-modern">
-        <div class="brand-logo-wrapper">
-          <div class="brand-logo-icon">
-            <i class="fas fa-cloud"></i>
-          </div>
-          <div class="brand-text">
-            <div class="brand-name">ALN</div>
-            <div class="brand-tagline">Hosting</div>
-          </div>
+      <div class="sidebar-header">
+        <div class="logo">
+          <i class="fas fa-cloud"></i>
+          <span>ALN Hosting</span>
         </div>
       </div>
 
@@ -1546,20 +1534,19 @@ function showDashboard() {
       ` : ''}
 
       <!-- Navigation -->
-      <nav class="nav-modern">
+      <nav class="sidebar-nav">
         ${navItems}
       </nav>
 
       <!-- User Profile Footer -->
-      <div class="user-footer-modern">
-        <div class="user-card-modern">
-          <div class="user-avatar-modern">
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar">
             <img src="${getDiscordAvatarUrl(currentUser)}" alt="${currentUser.username || 'User'}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.src='user.png'">
-            <div class="user-status-indicator"></div>
           </div>
-          <div class="user-info-modern">
-            <div class="user-name-modern">${currentUser.username || 'User'}</div>
-            <div class="user-badge-modern">${currentUser.isAdminConnect ? 'Admin Connect' : (currentUser.role === 'admin' ? 'Administrator' : 'Member')}</div>
+          <div class="user-info">
+            <div class="user-name">${currentUser.username || 'User'}</div>
+            <div class="user-role">${currentUser.isAdminConnect ? 'Admin Connect' : (currentUser.role === 'admin' ? 'Administrator' : 'Member')}</div>
           </div>
           <button class="user-menu-toggle" id="userMenuBtn">
             <i class="fas fa-ellipsis-v"></i>
@@ -1574,89 +1561,91 @@ function showDashboard() {
       </div>
     </aside>
 
-    <main class="main-content">
-      <header class="top-bar">
-        <div class="search-bar">
-          <i class="fas fa-search"></i>
-          <input type="text" placeholder="Search...">
-        </div>
-        <div class="top-actions">
-          ${isAdmin ? '<button class="send-announcement-btn" onclick="showSendAnnouncementModal()"><i class="fas fa-bullhorn"></i> Send Announcement</button>' : ''}
-          <a href="https://discord.gg/Mqzh86Jyts" class="top-link" target="_blank"><i class="fab fa-discord"></i> Discord</a>
-          <div class="notification-btn" onclick="toggleNotificationPanel()">
-            <div class="notification-icon">
-              <i class="fas fa-bell"></i>
-              <span class="notification-badge" style="display: none;">0</span>
+    <div class="main-container">
+      <main class="main-content">
+        <header class="top-bar">
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search...">
+          </div>
+          <div class="top-actions">
+            ${isAdmin ? '<button class="send-announcement-btn" onclick="showSendAnnouncementModal()"><i class="fas fa-bullhorn"></i> Send Announcement</button>' : ''}
+            <a href="https://discord.gg/Mqzh86Jyts" class="top-link" target="_blank"><i class="fab fa-discord"></i> Discord</a>
+            <div class="notification-btn" onclick="toggleNotificationPanel()">
+              <div class="notification-icon">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" style="display: none;">0</span>
+              </div>
+              <span class="notification-text">Notifications</span>
             </div>
-            <span class="notification-text">Notifications</span>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <!-- Notification Panel -->
-      <div class="notification-panel" id="notificationPanel">
-        <div class="notification-panel-header">
-          <h3><i class="fas fa-bell"></i> Announcements</h3>
-          <button class="notification-close-btn" onclick="toggleNotificationPanel()">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="notification-panel-body" id="announcementsContainer">
-          <div class="no-announcements">
-            <i class="fas fa-bell-slash"></i>
-            <p>No announcements yet</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Send Announcement Modal -->
-      <div class="announcement-modal" id="announcementModal">
-        <div class="announcement-modal-content">
-          <div class="announcement-modal-header">
-            <h3><i class="fas fa-bullhorn"></i> Send Announcement</h3>
-            <button class="notification-close-btn" onclick="closeSendAnnouncementModal()">
+        <!-- Notification Panel -->
+        <div class="notification-panel" id="notificationPanel">
+          <div class="notification-panel-header">
+            <h3><i class="fas fa-bell"></i> Announcements</h3>
+            <button class="notification-close-btn" onclick="toggleNotificationPanel()">
               <i class="fas fa-times"></i>
             </button>
           </div>
-          <div class="announcement-modal-body">
-            <div class="announcement-form-group">
-              <label>Announcement Title</label>
-              <input type="text" id="announcementTitle" placeholder="Enter announcement title...">
+          <div class="notification-panel-body" id="announcementsContainer">
+            <div class="no-announcements">
+              <i class="fas fa-bell-slash"></i>
+              <p>No announcements yet</p>
             </div>
-            <div class="announcement-form-group">
-              <label>Announcement Message</label>
-              <textarea id="announcementMessage" placeholder="Enter your announcement message..."></textarea>
-            </div>
-          </div>
-          <div class="announcement-modal-footer">
-            <button class="announcement-cancel-btn" onclick="closeSendAnnouncementModal()">Cancel</button>
-            <button class="announcement-send-btn" onclick="sendAnnouncement()"><i class="fas fa-paper-plane"></i> Send Announcement</button>
           </div>
         </div>
-      </div>
 
-      <div class="page active" id="dashboardPage"></div>
-      <div class="page" id="serversPage"></div>
-      <div class="page" id="consolePage"></div>
-      <div class="page" id="settingsPage"></div>
-      <div class="page" id="filesPage"></div>
-      <div class="page" id="backupsPage"></div>
-      <div class="page" id="networkPage"></div>
-      <div class="page" id="schedulesPage"></div>
-      <div class="page" id="startupPage"></div>
-      <div class="page" id="hostingPage"></div>
-      <div class="page" id="problemsPage"></div>
-      <div class="page" id="securityLogsPage"></div>
-      <div class="page" id="modulesPage"></div>
-      <div class="page" id="userManagementPage"></div>
-      <div class="page" id="storageManagementPage"></div>
-      <div class="page" id="connectPage"></div>
-      <div class="page" id="permissionsPage"></div>
-      <div class="page" id="orderManagementPage"></div>
-      <div class="page" id="creditsAdminPage"></div>
-      <div class="page" id="referralManagementPage"></div>
-      <div class="page" id="webhooksPage"></div>
-    </main>
+        <!-- Send Announcement Modal -->
+        <div class="announcement-modal" id="announcementModal">
+          <div class="announcement-modal-content">
+            <div class="announcement-modal-header">
+              <h3><i class="fas fa-bullhorn"></i> Send Announcement</h3>
+              <button class="notification-close-btn" onclick="closeSendAnnouncementModal()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="announcement-modal-body">
+              <div class="announcement-form-group">
+                <label>Announcement Title</label>
+                <input type="text" id="announcementTitle" placeholder="Enter announcement title...">
+              </div>
+              <div class="announcement-form-group">
+                <label>Announcement Message</label>
+                <textarea id="announcementMessage" placeholder="Enter your announcement message..."></textarea>
+              </div>
+            </div>
+            <div class="announcement-modal-footer">
+              <button class="announcement-cancel-btn" onclick="closeSendAnnouncementModal()">Cancel</button>
+              <button class="announcement-send-btn" onclick="sendAnnouncement()"><i class="fas fa-paper-plane"></i> Send Announcement</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="page active" id="dashboardPage"></div>
+        <div class="page" id="serversPage"></div>
+        <div class="page" id="consolePage"></div>
+        <div class="page" id="settingsPage"></div>
+        <div class="page" id="filesPage"></div>
+        <div class="page" id="backupsPage"></div>
+        <div class="page" id="networkPage"></div>
+        <div class="page" id="schedulesPage"></div>
+        <div class="page" id="startupPage"></div>
+        <div class="page" id="hostingPage"></div>
+        <div class="page" id="problemsPage"></div>
+        <div class="page" id="securityLogsPage"></div>
+        <div class="page" id="modulesPage"></div>
+        <div class="page" id="userManagementPage"></div>
+        <div class="page" id="storageManagementPage"></div>
+        <div class="page" id="connectPage"></div>
+        <div class="page" id="permissionsPage"></div>
+        <div class="page" id="orderManagementPage"></div>
+        <div class="page" id="creditsAdminPage"></div>
+        <div class="page" id="referralManagementPage"></div>
+        <div class="page" id="webhooksPage"></div>
+      </main>
+    </div>
   `;
 
   initializeEventListeners();
@@ -2172,6 +2161,9 @@ async function loadUserDashboard() {
   const langIcon = isJS ? 'pics/js.png' : 'pics/python.png';
   
   page.innerHTML = `
+    <div class="page-header">
+      <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+    </div>
     <div class="new-dashboard-container">
       <!-- Hero Section -->
       <div class="dashboard-hero ${isJS ? 'js-hero' : 'python-hero'}" style="background-image: url('${bgImage}');">
@@ -3915,6 +3907,9 @@ function loadConsole() {
   const page = document.getElementById('consolePage');
 
   page.innerHTML = `
+    <div class="page-header">
+      <h2><i class="fas fa-terminal"></i> Console</h2>
+    </div>
     <div class="console-page-redesign">
       <div class="console-controls-bar">
 
@@ -4557,6 +4552,9 @@ let currentFilePath = '';
 async function loadFiles() {
   const page = document.getElementById('filesPage');
   page.innerHTML = `
+    <div class="page-header">
+      <h2><i class="fas fa-folder"></i> File Manager</h2>
+    </div>
     <div class="files-page-pterodactyl">
       <div class="files-top-bar">
         <div class="files-breadcrumb-container">

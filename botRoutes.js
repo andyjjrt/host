@@ -1,0 +1,145 @@
+const express = require('express');
+const router = express.Router();
+const { spawn } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const sessionStore = require('./sessionStore');
+
+const USER_FILES_BASE_DIR = path.join(__dirname, 'user_files');
+
+// In-memory store for running bot processes
+const runningBots = new Map();
+
+// Middleware to get user and their file path from session
+const getUserFilePath = (req, res, next) => {
+    const sessionId = req.cookies.session;
+    if (!sessionId || !sessionStore.has(sessionId)) {
+        return res.status(401).json({ success: false, error: 'Not authenticated' });
+    }
+
+    const user = sessionStore.get(sessionId);
+    if (!user || !user.id) {
+        return res.status(400).json({ success: false, error: 'Invalid user data in session' });
+    }
+
+    req.user = user;
+    req.userFilesDir = path.join(USER_FILES_BASE_DIR, user.id);
+    
+    next();
+};
+
+// POST /api/bot/start - Start the bot
+router.post('/start', getUserFilePath, (req, res) => {
+    const userId = req.user.id;
+
+    if (runningBots.has(userId)) {
+        return res.status(400).json({ success: false, error: 'Bot is already running' });
+    }
+
+    // Determine the startup command (this is a simplified example)
+    // In a real app, this would be based on user's project type (e.g., python, node)
+    const mainPy = path.join(req.userFilesDir, 'main.py');
+    let command = 'node';
+    let args = ['index.js'];
+
+    if (fs.existsSync(mainPy)) {
+        command = 'python';
+        args = ['main.py'];
+    }
+
+    const logPath = path.join(req.userFilesDir, 'bot.log');
+    const logStream = fs.createWriteStream(logPath, { flags: 'a' });
+
+    const botProcess = spawn(command, args, {
+        cwd: req.userFilesDir,
+        detached: true, // Allows the bot to run even if the main app crashes
+        stdio: ['ignore', logStream, logStream]
+    });
+
+    botProcess.unref(); // The parent process can exit independently of the child
+
+    runningBots.set(userId, botProcess);
+
+    res.json({ success: true, message: 'Bot started successfully' });
+});
+
+// POST /api/bot/stop - Stop the bot
+router.post('/stop', getUserFilePath, (req, res) => {
+    const userId = req.user.id;
+    const botProcess = runningBots.get(userId);
+
+    if (!botProcess) {
+        return res.status(400).json({ success: false, error: 'Bot is not running' });
+    }
+
+    botProcess.kill();
+    runningBots.delete(userId);
+
+    res.json({ success: true, message: 'Bot stopped successfully' });
+});
+
+// POST /api/bot/restart - Restart the bot
+router.post('/restart', getUserFilePath, (req, res) => {
+    const userId = req.user.id;
+    const botProcess = runningBots.get(userId);
+
+    if (botProcess) {
+        botProcess.kill();
+        runningBots.delete(userId);
+    }
+    
+    // Simplified: re-use the start logic
+    // A more robust implementation would wait for the process to exit before starting again
+    const mainPy = path.join(req.userFilesDir, 'main.py');
+    let command = 'node';
+    let args = ['index.js'];
+
+    if (fs.existsSync(mainPy)) {
+        command = 'python';
+        args = ['main.py'];
+    }
+
+    const logPath = path.join(req.userFilesDir, 'bot.log');
+    const logStream = fs.createWriteStream(logPath, { flags: 'a' });
+
+    const newBotProcess = spawn(command, args, {
+        cwd: req.userFilesDir,
+        detached: true,
+        stdio: ['ignore', logStream, logStream]
+    });
+    
+    newBotProcess.unref();
+    runningBots.set(userId, newBotProcess);
+
+    res.json({ success: true, message: 'Bot restarted successfully' });
+});
+
+// GET /api/bot/status - Get bot status
+router.get('/status', getUserFilePath, (req, res) => {
+    const userId = req.user.id;
+    const isRunning = runningBots.has(userId);
+
+    res.json({
+        success: true,
+        status: {
+            running: isRunning,
+            uptime: 0, // Placeholder
+            memory: 0, // Placeholder
+            cpu: 0     // Placeholder
+        }
+    });
+});
+
+// GET /api/bot/logs - Get bot logs
+router.get('/logs', getUserFilePath, (req, res) => {
+    const logPath = path.join(req.userFilesDir, 'bot.log');
+    if (fs.existsSync(logPath)) {
+        const logs = fs.readFileSync(logPath, 'utf-8');
+        res.json({ success: true, logs: logs });
+    } else {
+        res.json({ success: true, logs: 'No logs available' });
+    }
+});
+
+
+module.exports = router;

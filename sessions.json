@@ -1,0 +1,51 @@
+{
+  "8c7d7dfe-defa-4991-a22d-af7b81d3847f": {
+    "id": "596917442286977072",
+    "username": "andyjjrt",
+    "avatar": "a_df319bca5e5ade45332c5a4bbc2b8afd",
+    "discriminator": "0",
+    "public_flags": 256,
+    "flags": 256,
+    "banner": "a_657987c78022a9deec95c27ce03d4fc9",
+    "accent_color": 16421008,
+    "global_name": null,
+    "avatar_decoration_data": {
+      "asset": "a_c4daf909b5197aa6048b451a2476ebab",
+      "sku_id": "1385050947813773362",
+      "expires_at": null
+    },
+    "collectibles": {
+      "nameplate": {
+        "sku_id": "1377377712028516443",
+        "asset": "nameplates/nameplates_v2/spirit_moon/",
+        "label": "COLLECTIBLES_NAMEPLATES_V2_SPIRIT_MOON_A11Y",
+        "palette": "violet"
+      }
+    },
+    "display_name_styles": {
+      "font_id": 3,
+      "effect_id": 4,
+      "colors": [
+        7183099
+      ]
+    },
+    "banner_color": "#fa9090",
+    "clan": {
+      "identity_guild_id": "1369601312513064990",
+      "identity_enabled": true,
+      "tag": "ヰ世界",
+      "badge": "aae64244fde76b75f97798ef50ae7a8c"
+    },
+    "primary_guild": {
+      "identity_guild_id": "1369601312513064990",
+      "identity_enabled": true,
+      "tag": "ヰ世界",
+      "badge": "aae64244fde76b75f97798ef50ae7a8c"
+    },
+    "mfa_enabled": true,
+    "locale": "zh-TW",
+    "premium_type": 2,
+    "email": "andyjjrt@gmail.com",
+    "verified": true
+  }
+}
